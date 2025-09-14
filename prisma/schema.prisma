@@ -1,0 +1,144 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       BigInt   @id @default(autoincrement())
+  tgId     BigInt   @unique
+  username String
+  role     UserRole @default(User)
+  language Language @default(En)
+  balance  Int      @default(0)
+
+  isBanned     Boolean @default(false)
+  isMailBanned Boolean @default(false)
+
+  referrerId BigInt?
+  referrer   User?   @relation("UserReferrals", fields: [referrerId], references: [id])
+  referrals  User[]  @relation("UserReferrals")
+
+  lastSeenAt  DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Spin        Spin[]
+  Transaction Transaction[]
+}
+
+model Game {
+  id         BigInt  @id @default(autoincrement())
+  count      Int
+  price      Int
+  nftMode    Boolean @default(false)
+  invoiceUrl String?
+}
+
+model Gift {
+  id        BigInt   @id @default(autoincrement())
+  giftId    String?  @unique
+  savedId   Int?
+  msgId     Int?
+  num       Int?
+  slug      String?
+  title     String?
+  price     Int?
+  isWinNFT  Boolean  @default(false)
+  isNFT     Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  Spin      Spin[]
+  NftSpin   Spin[]   @relation("nftGift")
+}
+
+model Spin {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt
+  user      User?    @relation(fields: [userId], references: [id])
+  count     Int
+  results   Json
+  type      SpinType
+  nftMode   Boolean
+  giftId    BigInt?
+  nftGiftId BigInt?
+
+  giftTransferedAt    DateTime?
+  nftGiftTransferedAt DateTime?
+
+  gift    Gift? @relation(fields: [giftId], references: [id])
+  nftGift Gift? @relation(name: "nftGift", fields: [nftGiftId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+enum SpinType {
+  Win
+  Lose
+}
+
+model Partner {
+  id        BigInt      @id @default(autoincrement())
+  title     String?
+  type      PartnerType @default(Channel)
+  channelId BigInt?
+  botToken  String?
+  url       String
+  priority  Int         @default(0) @db.TinyInt
+}
+
+enum PartnerType {
+  Channel
+  Bot
+}
+
+model Transaction {
+  id        BigInt          @id @default(autoincrement())
+  userId    BigInt
+  user      User            @relation(fields: [userId], references: [id])
+  type      TransactionType
+  amount    Int
+  meta      Json            @default("{}")
+  createdAt DateTime        @default(now())
+}
+
+enum TransactionType {
+  Deposit
+  Spin
+  Reward
+  Refund
+}
+
+model Settings {
+  key   String       @id
+  type  SettingsType @default(String)
+  value String?      @db.LongText
+}
+
+enum SettingsType {
+  String
+  Int
+  Float
+  Boolean
+  Json
+}
+
+enum Language {
+  En
+  Ru
+}
+
+enum UserRole {
+  User
+  Moderator
+  Admin
+}
