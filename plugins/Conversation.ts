@@ -7,7 +7,8 @@ export abstract class ConversationFlow<T> {
   protected ctx: MyContext;
   protected conversation: MyConversation;
   protected form: T;
-  protected cancelCb: string = "start";
+ protected cancelCb: string | (() => string | Promise<string>) = "start";
+
   private _restartRequested = false;
   private _gotoStep: number | null = null;
   private _currentStepIndex = 0;
@@ -118,34 +119,40 @@ export abstract class ConversationFlow<T> {
 
 
   //checkCancel
-  protected async checkCancel<
-    T extends
-      | { callbackQuery?: { data: string } }
-      | { message?: { text: string } }
-  >(msg: T) {
-    if (
-      ("callbackQuery" in msg &&
-        msg.callbackQuery &&
-        msg.callbackQuery.data === "cancel") ||
-      ("message" in msg &&
-        msg.message &&
-        msg.message.text &&
-        msg.message.text.toLowerCase() === "отмена")
-    ) {
-      //onCancel
-      if (this.onCancel) {
-        await this.onCancel();
-      } else {
-        await this.reply(await this.t("action-canceled"), {
-          reply_markup: new InlineKeyboard().text(
-            await this.t("back"),
-            this.cancelCb || "start"
-          ),
-        });
-      }
-      throw new Error("cancelled");
+protected async checkCancel<
+  T extends
+    | { callbackQuery?: { data: string } }
+    | { message?: { text: string } }
+>(msg: T) {
+  const isCancel =
+    ("callbackQuery" in msg && msg.callbackQuery?.data === "cancel") ||
+    ("message" in msg &&
+      msg.message?.text?.toLowerCase() === "отмена");
+
+  if (!isCancel) return;
+
+  if (this.onCancel) {
+    await this.onCancel();
+  } else {
+    // получаем строку из cancelCb
+    let cancelTarget: string;
+    if (typeof this.cancelCb === "function") {
+      cancelTarget = await this.cancelCb();
+    } else {
+      cancelTarget = this.cancelCb;
     }
+
+    await this.reply(await this.t("action-canceled"), {
+      reply_markup: new InlineKeyboard().text(
+        await this.t("back"),
+        cancelTarget || "start"
+      ),
+    });
   }
+
+  throw new Error("cancelled");
+}
+
 
   //waitFor with checkCancel
   protected async waitFor<

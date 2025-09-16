@@ -1,29 +1,43 @@
-import partners from "@/handlers/partners";
-import playGame from "@/handlers/games/play";
+
 import { MyContext } from "@/types/MyContext";
 import { prisma } from "@/utils/prisma";
-import { getSetting } from "@/utils/settings";
-import { Api, Composer, InlineKeyboard } from "grammy";
-import admin from "@/handlers/admin";
+import {  Composer } from "grammy";
 import adminMiddleware from "@/middlewares/admin.middleware";
 import users from "@/handlers/admin/users";
 import user from "@/handlers/admin/users/user";
 
 const bot = new Composer<MyContext>();
-bot.callbackQuery("admin", adminMiddleware, admin);
-bot.command("admin", adminMiddleware, admin);
-
-bot.callbackQuery("admin:mail", adminMiddleware, (ctx) =>
-  ctx.conversation.enter("admin:mail")
-);
 bot.callbackQuery(/^admin:users:(\d+)$/, adminMiddleware, (ctx) =>
   users(ctx, ctx.match[1])
 );
 bot.callbackQuery(/^admin:user:(\d+)$/, adminMiddleware, (ctx) =>
   user(ctx, ctx.match[1])
 );
-bot.callbackQuery(/^admin:user:(\d+)$/, adminMiddleware, (ctx) =>
-  user(ctx, ctx.match[1])
+bot.callbackQuery(/^admin:user:(\d+):edit:balance$/, adminMiddleware, (ctx) => {
+  ctx.session.userId = ctx.match[1];
+  return ctx.conversation.enter("admin:user:edit:balance");
+});
+bot.callbackQuery(
+  /^admin:user:(\d+):toggle:isBanned$/,
+  adminMiddleware,
+  async (ctx) => {
+    const us = await prisma.user.findFirstOrThrow({
+      where: {
+        id: Number(ctx.match[1]),
+      },
+    });
+
+    await prisma.user.update({
+      where: {
+        id: us.id,
+      },
+      data: {
+        isBanned: !us.isBanned,
+      },
+    });
+
+    return user(ctx, us.id);
+  }
 );
 bot.hears(/^\/user (@?[A-Za-z0-9_]+)$/, adminMiddleware, async (ctx) => {
   const input = ctx.match[1].replace("@", "");

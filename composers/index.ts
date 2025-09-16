@@ -1,17 +1,28 @@
-
 import fs from "fs";
 import path from "path";
 import { Bot } from "grammy";
 import { MyContext } from "@/types/MyContext";
 
+async function loadComposersRecursively(dir: string, bot: Bot<MyContext>) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      await loadComposersRecursively(fullPath, bot);
+    } else if (
+      entry.isFile() &&
+      entry.name !== "index.ts" &&
+      entry.name.endsWith(".ts")
+    ) {
+      const { default: composer } = await import(fullPath);
+      bot.use(composer);
+    }
+  }
+}
+
 export default async (bot: Bot<MyContext>) => {
   const composersDir = path.resolve(__dirname);
-  const files = fs
-    .readdirSync(composersDir)
-    .filter((f) => f !== "index.ts" && f.endsWith(".ts"));
-
-  for (const file of files) {
-    const { default: composer } = await import(path.join(composersDir, file));
-    bot.use(composer);
-  }
+  await loadComposersRecursively(composersDir, bot);
 };

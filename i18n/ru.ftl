@@ -1,6 +1,7 @@
 need-username = 😕 Для использования бота установите @ username в настройках Telegram
 main-menu = 📋 Главное меню
 action-canceled = ❌ Действие отменено
+cancel = ❌ Отменить
 start =
     .free = 🔥 {$count} ⭐️ • бесплатно
     .ref = 👤 {$count} ⭐️ • за друга
