@@ -37,10 +37,10 @@ export default async (ctx: MyContext, next: NextFunction) => {
   if (!ctx.session.lastMessageIds) ctx.session.lastMessageIds = [];
   if (ctx.user.language) ctx.i18n.useLocale(ctx.user.language);
   if (ctx.user.isBanned) return;
-  if (!ctx.from.username && ctx.from?.id == ctx.chat?.id)
-    return ctx.reply(ctx.t("need-username"), {
-      reply_markup: new InlineKeyboard().text(ctx.t("main-menu"), "start"),
-    });
+  // if (!ctx.from.username && ctx.from?.id == ctx.chat?.id)
+  //   return ctx.reply(ctx.t("need-username"), {
+  //     reply_markup: new InlineKeyboard().text(ctx.t("main-menu"), "start"),
+  //   });
 
   return next();
 };
