@@ -1,6 +1,6 @@
 import "module-alias/register";
 import { prisma } from "@/utils/prisma";
-import { SavedStarGift, StarGiftUnique, TelegramClient } from "@mtcute/node";
+import { SavedStarGift, StarGiftUnique, TelegramClient } from "@mtcute/bun";
 import { config } from "dotenv";
 import path from "path";
 config({
