@@ -14,7 +14,7 @@ referral =
     .text = 
             <b>👤 Get {$count} ⭐️ to your balance for every friend!</b>
 
-            🎯 Condition: <b>a friend must throw at least 3 darts</b>
+            🎯 Condition: <b>a friend must throw at least 5 darts</b>
     .share = ↪️ Share
     .share-text = 
                 🎯 Can you hit the bullseye? Durov gives NFT gifts!
