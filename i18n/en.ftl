@@ -9,6 +9,7 @@ start =
             💰 Balance: <b>{$balance} ⭐️</b>
 
             <b>Hit the target with all darts and win a cool gift 🎁</b>
+            <i>NFT can only be won in games with the 💎 button.</i>
 referral =
     .text = 
             <b>👤 Get {$count} ⭐️ to your balance for every friend!</b>
