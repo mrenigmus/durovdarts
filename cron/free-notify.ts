@@ -1,21 +1,15 @@
 import "module-alias/register";
-import { Api, InlineKeyboard } from "grammy";
+import { Api, InlineKeyboard, InputFile } from "grammy";
 import { config } from "dotenv";
 import path from "path";
 import { prisma } from "@/utils/prisma";
-import { I18n } from "@grammyjs/i18n";
+import { i18n } from "@/plugins/I18n";
 
 config({ path: path.join(__dirname, "../.env") });
 
 const bot = new Api(process.env.BOT_TOKEN!);
 const BATCH_SIZE = 30;
 const BATCH_DELAY = 1500; // мс между батчами
-
-// инициализируем i18n
-const i18n = new I18n({
-  defaultLocale: "ru", // можно поставить en/ru
-  directory: path.join(__dirname, "../locales"),
-});
 
 async function checkUsers() {
   const txs = await prisma.transaction.findMany({
@@ -42,6 +36,8 @@ async function checkUsers() {
     .map((tx) => tx.user)
     .filter((u): u is NonNullable<typeof u> => Boolean(u));
 
+  const image = new InputFile(path.join(__dirname, "../images/stars.png"));
+
   for (let i = 0; i < users.length; i += BATCH_SIZE) {
     const batch = users.slice(i, i + BATCH_SIZE);
 
@@ -52,7 +48,8 @@ async function checkUsers() {
           // создаём локализатор для языка юзера
           const text = i18n.t(lang, "notify.rewards");
 
-          await bot.sendMessage(Number(user.tgId), text, {
+          await bot.sendPhoto(Number(user.tgId), image, {
+            caption: text,
             parse_mode: "HTML",
             reply_markup: new InlineKeyboard().text(
               i18n.t(lang, "notify.rewards-receive"),
@@ -68,6 +65,5 @@ async function checkUsers() {
 
   setTimeout(checkUsers, 60 * 60 * 1000);
 }
-
 
 checkUsers();

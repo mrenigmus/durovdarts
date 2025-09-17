@@ -1,5 +1,8 @@
 need-username = 😕 To use the bot, set a @username in your Telegram settings
 main-menu = 📋 Main Menu
+notify =
+        .rewards = <b>🔥 Free stars are available!</b>
+        .rewards-receive = ⭐️ Claim
 start =
     .free = 🔥 {$count} ⭐️ • free
     .ref = 👤 {$count} ⭐️ • for a friend
