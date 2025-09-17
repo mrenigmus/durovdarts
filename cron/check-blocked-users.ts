@@ -63,6 +63,9 @@ const run = async () => {
   await checkUsers();
   setTimeout(run, 60 * 60 * 1000);
 };
+
+run();
+
 process.on("uncaughtException", (err) => {
   console.error("❌ Uncaught Exception:", err);
 });
