@@ -2,7 +2,7 @@ import { MyContext } from "@/types/MyContext";
 import { prisma } from "@/utils/prisma";
 import { getSetting } from "@/utils/settings";
 import { InlineKeyboard } from "grammy";
-import { setTimeout } from "timers/promises";
+const sleep = (ms:number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export default async function playGame(
   ctx: MyContext,
@@ -149,7 +149,7 @@ export default async function playGame(
       }
     }
 
-    await setTimeout(duration);
+    await sleep(duration);
 
     const reply_markup = new InlineKeyboard();
 
