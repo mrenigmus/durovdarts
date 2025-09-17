@@ -28,6 +28,7 @@ async function checkUsers() {
     await Promise.all(
       batch.map(async (user) => {
         try {
+          console.log(`Checking: `, user.tgId);
           await bot.sendChatAction(Number(user.tgId), "typing");
           idsToUnban.push(Number(user.id));
         } catch (err: any) {
