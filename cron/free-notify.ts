@@ -48,6 +48,7 @@ async function checkUsers() {
           // создаём локализатор для языка юзера
           const text = i18n.t(lang, "notify.rewards");
 
+          console.log("Sending: ", user.tgId);
           await bot.sendPhoto(Number(user.tgId), image, {
             caption: text,
             parse_mode: "HTML",
