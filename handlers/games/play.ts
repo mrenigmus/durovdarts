@@ -164,7 +164,19 @@ export default async function playGame(
     reply_markup.row().text(ctx.t("back"), "start");
     try {
       if (!win) {
-        await ctx.api.sendMessage(ctx.from!.id, ctx.t("games.lose"), {
+          let details = "";
+
+  if (game.count > 1) {
+    details =
+      "\n\n" +
+      results
+        .map((r, i) =>
+          r?.dice?.value === 6 ? `${i + 1 }. <b>✔️ Попал</b>` : `${i + 1}. <b>❌ Промах</b>`
+        )
+        .join("\n");
+  }
+
+        await ctx.api.sendMessage(ctx.from!.id, ctx.t("games.lose") + details, {
           reply_markup,
           parse_mode: "HTML",
         });
