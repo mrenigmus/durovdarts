@@ -66,19 +66,15 @@ export default async function playGame(
         parse_mode: "HTML",
       }
     );
-    try {
-      results = await Promise.all(
-        Array.from({ length: game.count }).map(() =>
-          ctx.api.sendDice(ctx.from!.id, emoji).catch((err) => {
-            console.error("sendDice failed:", err);
-            diceError = true;
-            return null;
-          })
-        )
-      );
-    } catch (err) {
-      console.error("Dice execution error", err);
-      diceError = true;
+    for (let i = 0; i < game.count; i++) {
+      try {
+        const r = await ctx.api.sendDice(ctx.from!.id, emoji);
+        results.push(r);
+      } catch (err) {
+        console.error("sendDice failed:", err);
+        diceError = true;
+        results.push(null);
+      }
     }
 
     // если ошибка в кубиках — автоматический проигрыш
@@ -164,17 +160,19 @@ export default async function playGame(
     reply_markup.row().text(ctx.t("back"), "start");
     try {
       if (!win) {
-          let details = "";
+        let details = "";
 
-  if (game.count > 1) {
-    details =
-      "\n\n" +
-      results
-        .map((r, i) =>
-          r?.dice?.value === 6 ? `${i + 1 }. <b>✅ ${ctx.t("games.hit")}</b>` : `${i + 1}. <b>❌ ${ctx.t("games.miss")}</b>`
-        )
-        .join("\n");
-  }
+        if (game.count > 1) {
+          details =
+            "\n\n" +
+            results
+              .map((r, i) =>
+                r?.dice?.value === 6
+                  ? `${i + 1}. <b>✅ ${ctx.t("games.hit")}</b>`
+                  : `${i + 1}. <b>❌ ${ctx.t("games.miss")}</b>`
+              )
+              .join("\n");
+        }
 
         await ctx.api.sendMessage(ctx.from!.id, ctx.t("games.lose") + details, {
           reply_markup,
