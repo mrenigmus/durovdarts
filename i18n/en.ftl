@@ -33,7 +33,9 @@ games =
     .no-gifts = ❌ No available gifts
     .not-enough-funds = ❌ Not enough stars on balance
     .spin = 🎯 Throw again
-    .lose = <b>❌ You lost!</b>
+    .lose = <b>😔 You lost!</b>
+    .miss = Miss
+    .hit = Hit
     .win = <b>🎉 Congratulations, you won!</b>
     .win-nft = 
                 <b>🎉 Congratulations, you won an NFT!</b>

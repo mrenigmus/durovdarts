@@ -171,7 +171,7 @@ export default async function playGame(
       "\n\n" +
       results
         .map((r, i) =>
-          r?.dice?.value === 6 ? `${i + 1 }. <b>✔️ Попал</b>` : `${i + 1}. <b>❌ Промах</b>`
+          r?.dice?.value === 6 ? `${i + 1 }. <b>✅ ${ctx.t("games.hit")}</b>` : `${i + 1}. <b>❌ ${ctx.t("games.miss")}</b>`
         )
         .join("\n");
   }
