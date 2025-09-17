@@ -1,0 +1,72 @@
+import "module-alias/register";
+import { Api } from "grammy";
+import { config } from "dotenv";
+import path from "path";
+import { prisma } from "@/utils/prisma";
+
+config({ path: path.join(__dirname, "../.env") });
+
+const bot = new Api(process.env.BOT_TOKEN!);
+const BATCH_SIZE = 30;
+const BATCH_DELAY = 1500; // мс между батчами
+
+async function checkUsers() {
+  const users = await prisma.user.findMany({
+    where: {},
+    select: { id: true, tgId: true },
+  });
+
+  const idsToBan: number[] = [];
+  const idsToUnban: number[] = [];
+
+  for (let i = 0; i < users.length; i += BATCH_SIZE) {
+    const batch = users.slice(i, i + BATCH_SIZE);
+
+    await Promise.all(
+      batch.map(async (user) => {
+        try {
+          await bot.sendChatAction(Number(user.tgId), "typing");
+          idsToUnban.push(Number(user.id));
+        } catch (err: any) {
+          if (err?.error_code === 403 || err?.error_code === 400) {
+            idsToBan.push(Number(user.id));
+          } else {
+            console.error(`⚠️ Ошибка для ${user.tgId}:`, err);
+          }
+        }
+      })
+    );
+
+    await new Promise((res) => setTimeout(res, BATCH_DELAY));
+  }
+
+  if (idsToBan.length) {
+    await prisma.user.updateMany({
+      where: { id: { in: idsToBan } },
+      data: { isMailBanned: true },
+    });
+  }
+
+  if (idsToUnban.length) {
+    await prisma.user.updateMany({
+      where: { id: { in: idsToUnban } },
+      data: { isMailBanned: false },
+    });
+  }
+
+  console.log(
+    `✅ Готово. Забанено: ${idsToBan.length}, разблокировано: ${idsToUnban.length}`
+  );
+}
+
+const run = async () => {
+  await checkUsers();
+  setTimeout(run, 60 * 60 * 1000);
+};
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+});
