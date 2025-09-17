@@ -14,6 +14,9 @@ async function checkUsers() {
   const users = await prisma.user.findMany({
     where: {},
     select: { id: true, tgId: true },
+    orderBy: {
+      isMailBanned: "asc"
+    }
   });
 
   const idsToBan: number[] = [];
