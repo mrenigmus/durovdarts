@@ -51,10 +51,15 @@ async function run() {
     if (ctx.preCheckoutQuery.invoice_payload.includes("game:")) {
       const gameId = ctx.preCheckoutQuery.invoice_payload.split(":");
 
-      const game = await prisma.game.findFirst({
+    const game = await prisma.game.findFirst({
         where: {
           id: Number(gameId),
-          botId: ctx.bot.id,
+          bot: {
+            tgId: ctx.me.id,
+          },
+        },
+        include: {
+          bot: true,
         },
       });
       return !!game;
