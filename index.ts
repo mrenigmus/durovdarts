@@ -47,11 +47,11 @@ async function run() {
     console.error("Error in bot:", err);
   });
   const initial = () => ({});
- bot.on("pre_checkout_query", async (ctx) => {
+  bot.on("pre_checkout_query", async (ctx) => {
     if (ctx.preCheckoutQuery.invoice_payload.includes("game:")) {
-      const gameId = ctx.preCheckoutQuery.invoice_payload.split(":")[1];
+      const gameId = ctx.preCheckoutQuery.invoice_payload.split(":")![1];
 
-    const game = await prisma.game.findFirst({
+      const game = await prisma.game.findFirst({
         where: {
           id: Number(gameId),
           bot: {
@@ -62,9 +62,9 @@ async function run() {
           bot: true,
         },
       });
-      return !!game;
+      if ( game ) return ctx.answerPreCheckoutQuery(true);
     }
-    return false;
+     return ctx.answerPreCheckoutQuery(false);
   });
   bot.callbackQuery("none", () => {});
 
