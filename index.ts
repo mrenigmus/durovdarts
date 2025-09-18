@@ -30,7 +30,6 @@ async function run() {
       tgId: me.id,
     },
     update: {
-      name: me.first_name ?? "",
       token: process.env.BOT_TOKEN as string,
       type: process.env.GAME_TYPE! as GameType,
     },

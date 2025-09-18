@@ -110,7 +110,7 @@ export default async function startHandler(ctx: MyContext) {
     skip: randomSkip,
   });
 
-  if (bot) reply_markup.text(bot.name, `https://t.me/${bot.username}`);
+  if (bot) reply_markup.url(bot.name, `https://t.me/${bot.username}`);
   
   if (ctx.user.language == "Ru") reply_markup.text(`🇺🇸 English`, `lang_En`);
   else reply_markup.text(`🇷🇺 Русский язык`, `lang_Ru`);
