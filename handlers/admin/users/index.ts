@@ -29,7 +29,7 @@ export default async (ctx: MyContext, page: number | string) => {
     v.map((v) =>
       reply_markup.text(
         `${v.user.username ? v.user.username : v.user.tgId}`,
-        `admin:user:${v.id}`
+        `admin:user:${v.userId}`
       )
     );
   });
