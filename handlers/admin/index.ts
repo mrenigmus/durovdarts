@@ -4,9 +4,17 @@ import { InlineKeyboard } from "grammy";
 
 export default async (ctx: MyContext) => {
     const [users, spins, winSpins, nftSent] = await Promise.all([
-        prisma.user.count(),
-        prisma.spin.count(),
-        prisma.spin.count({ where: { type: "Win" } }),
+        prisma.userBot.count({
+            where: {
+                botId: ctx.bot.id,
+            }
+        }),
+        prisma.spin.count({
+            where: {
+                botId: ctx.bot.id,
+            }
+        }),
+        prisma.spin.count({ where: { type: "Win", botId: ctx.bot.id} }),
         prisma.gift.count({ where: { isActive: false, isNFT: true } }),
     ]);
 
@@ -22,7 +30,7 @@ export default async (ctx: MyContext) => {
         .text(`👥 Юзеры`, `admin:users:1`).row()
         .text(`🎮 Варианты игры`, `admin:games`).row()
         .text(`💸 Партнеры`, `admin:partners`).row()
-        .text(`🎁 Гифты`, `admin:gifts:1`).row()
+        // .text(`🎁 Гифты`, `admin:gifts:1`).row()
         .text(`⚙️ Настройки`, `admin:settings`).row()
         .text(`◀️ Назад`, `start`);
 

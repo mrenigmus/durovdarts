@@ -2,7 +2,7 @@ import { MyContext } from "@/types/MyContext";
 import { prisma } from "@/utils/prisma";
 import { getSetting } from "@/utils/settings";
 import { InlineKeyboard } from "grammy";
-const sleep = (ms:number) => new Promise((resolve) => setTimeout(resolve, ms))
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default async function playGame(
   ctx: MyContext,
@@ -16,7 +16,7 @@ export default async function playGame(
   }
 
   const game = await prisma.game.findUnique({
-    where: { id: Number(gameId) },
+    where: { id: Number(gameId), botId: ctx.bot.id },
   });
   if (!game) {
     return ctx.api.sendMessage(ctx.from!.id, ctx.t("games.not-found"), {
@@ -86,7 +86,10 @@ export default async function playGame(
     const spin = await tx.spin.create({
       data: {
         userId,
+        gameId: game.id,
+        botId: ctx.bot.id,
         count: game.count,
+        gameType: game.type,
         results,
         type: win ? "Win" : "Lose",
         nftMode: game.nftMode,
@@ -95,6 +98,7 @@ export default async function playGame(
 
     await tx.transaction.create({
       data: {
+        botId: ctx.bot.id,
         userId: ctx.user.id,
         amount: game.price,
         type: "Spin",
@@ -107,12 +111,14 @@ export default async function playGame(
     if (ctx.user.referrerId) {
       const spinCount = await tx.spin.count({
         where: {
+          botId: ctx.bot.id,
           userId: ctx.user.id,
         },
       });
 
       const rewardTx = await tx.transaction.findFirst({
         where: {
+          botId: ctx.bot.id,
           userId: ctx.user.referrerId,
           type: "Reward",
           meta: {
@@ -128,6 +134,7 @@ export default async function playGame(
       if (!rewardTx && spinCount >= requirement) {
         await tx.transaction.create({
           data: {
+          botId: ctx.bot.id,
             userId: ctx.user.referrerId,
             type: "Reward",
             meta: {

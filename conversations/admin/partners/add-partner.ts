@@ -28,6 +28,7 @@ export class Conversation extends ConversationFlow<Form> {
   protected async onFinish() {
     const partner = await prisma.partner.create({
       data: {
+        botId: await this.conversation.external(c => c.bot.id),
         title: this.form.title!,
         type: this.form.type!,
         channelId: this.form.channelId,

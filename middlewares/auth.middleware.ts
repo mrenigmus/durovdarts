@@ -33,6 +33,21 @@ export default async (ctx: MyContext, next: NextFunction) => {
     },
   });
 
+  let userBot = await prisma.userBot.findFirst({
+    where: {
+      userId: user.id,
+      botId: ctx.bot.id,
+    },
+  });
+
+  if (!userBot)
+    await prisma.userBot.create({
+      data: {
+        botId: ctx.bot.id,
+        userId: user.id,
+      },
+    });
+
   ctx.user = user;
   if (!ctx.session.lastMessageIds) ctx.session.lastMessageIds = [];
   if (ctx.user.language) ctx.i18n.useLocale(ctx.user.language);

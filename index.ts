@@ -13,7 +13,8 @@ import start from "./handlers/start";
 import playGame from "./handlers/games/play";
 import { prisma } from "./utils/prisma";
 import referral from "./handlers/referral";
-import { Language } from "./generated/prisma";
+import { GameType, Language } from "./generated/prisma";
+import botMiddleware from "./middlewares/bot.middleware";
 
 config({
   path: path.join(__dirname, "./.env"),
@@ -21,6 +22,27 @@ config({
 
 async function run() {
   const bot = new Bot<MyContext>(process.env.BOT_TOKEN as string);
+
+  const me = await bot.api.getMe();
+
+  await prisma.bot.upsert({
+    where: {
+      tgId: me.id,
+    },
+    update: {
+      name: me.first_name ?? "",
+      token: process.env.BOT_TOKEN as string,
+      type: process.env.GAME_TYPE! as GameType,
+    },
+    create: {
+      tgId: me.id,
+      username: me.username ?? "",
+      name: me.first_name ?? "",
+      type: process.env.GAME_TYPE! as GameType,
+      token: process.env.BOT_TOKEN as string,
+      isActive: true,
+    },
+  });
   bot.catch((err) => {
     console.error("Error in bot:", err);
   });
@@ -35,6 +57,7 @@ async function run() {
     })
   );
   bot.use(i18n);
+  bot.use(botMiddleware);
   bot.use(authMiddleware);
   bot.use(deleteMessagesMiddleware);
   bot.use(collectBotMessagesPlugin());

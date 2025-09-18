@@ -11,12 +11,19 @@ const BATCH_SIZE = 30;
 const BATCH_DELAY = 1500; // мс между батчами
 
 async function checkUsers() {
-  const users = await prisma.user.findMany({
-    where: {},
-    select: { id: true, tgId: true },
+  const users = await prisma.userBot.findMany({
+    where: {
+      bot: {
+        token: process.env.BOT_TOKEN!,
+      },
+    },
+    include: {
+      user: true,
+      bot: true,
+    },
     orderBy: {
-      isMailBanned: "asc"
-    }
+      isMailBanned: "asc",
+    },
   });
 
   const idsToBan: number[] = [];
@@ -28,14 +35,14 @@ async function checkUsers() {
     await Promise.all(
       batch.map(async (user) => {
         try {
-          console.log(`Checking: `, user.tgId);
-          await bot.sendChatAction(Number(user.tgId), "typing");
+          console.log(`Checking: `, user.user.tgId);
+          await bot.sendChatAction(Number(user.user.tgId), "typing");
           idsToUnban.push(Number(user.id));
         } catch (err: any) {
           if (err?.error_code === 403 || err?.error_code === 400) {
             idsToBan.push(Number(user.id));
           } else {
-            console.error(`⚠️ Ошибка для ${user.tgId}:`, err);
+            console.error(`⚠️ Ошибка для ${user.user.tgId}:`, err);
           }
         }
       })
@@ -45,14 +52,14 @@ async function checkUsers() {
   }
 
   if (idsToBan.length) {
-    await prisma.user.updateMany({
+    await prisma.userBot.updateMany({
       where: { id: { in: idsToBan } },
       data: { isMailBanned: true },
     });
   }
 
   if (idsToUnban.length) {
-    await prisma.user.updateMany({
+    await prisma.userBot.updateMany({
       where: { id: { in: idsToUnban } },
       data: { isMailBanned: false },
     });

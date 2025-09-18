@@ -202,9 +202,6 @@ async function sendUnsended() {
       gift: {
         isWinNFT: true,
       },
-      user: {
-        isNot: null,
-      },
     },
     include: {
       gift: true,
@@ -238,7 +235,7 @@ async function sendUnsended() {
           },
         });
         await sendGift({
-          toId: Number(s.user!.tgId),
+          toId: Number(s.user.tgId),
           messageId: gift.messageId!,
         });
       });

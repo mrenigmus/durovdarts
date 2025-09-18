@@ -2,7 +2,11 @@ import "module-alias/register";
 import { prisma } from "@/utils/prisma";
 import { Settings } from "@/generated/prisma";
 import { setSetting } from "@/utils/settings";
-
+import { config } from "dotenv";
+import path from "path";
+config({
+  path: path.join(__dirname, "../.env")
+})
 async function main() {
   await Promise.all([
     setSetting("ref:reward", 10, "Int"),

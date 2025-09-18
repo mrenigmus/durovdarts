@@ -4,6 +4,9 @@ import { InlineKeyboard } from "grammy";
 
 export default async (ctx: MyContext) => {
   const partners = await prisma.partner.findMany({
+    where: {
+      botId: ctx.bot.id,
+    },
     orderBy: {
       priority: "desc",
     },
@@ -13,7 +16,10 @@ export default async (ctx: MyContext) => {
   kb.text("➕ Добавить", "admin:partners:add").row();
 
   for (const p of partners) {
-    kb.text(`${p.type === "Bot" ? "🤖" : "📢"} ${p.title}`, `admin:partner:${p.id}`).row();
+    kb.text(
+      `${p.type === "Bot" ? "🤖" : "📢"} ${p.title}`,
+      `admin:partner:${p.id}`
+    ).row();
   }
 
   kb.text(ctx.t("back"), "admin");

@@ -5,6 +5,9 @@ import { InlineKeyboard } from "grammy";
 
 export default async (ctx: MyContext) => {
   const games = await prisma.game.findMany({
+    where: {
+      botId: ctx.bot.id,
+    },
     orderBy: {
       price: "asc",
     },

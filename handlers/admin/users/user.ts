@@ -21,16 +21,19 @@ export default async (ctx: MyContext, id: number | string | bigint) => {
     prisma.spin.count({
       where: {
         userId: user.id,
+        botId: ctx.bot.id,
       },
     }),
     prisma.spin.count({
-      where: { type: "Win", userId: user.id },
+      where: { type: "Win", userId: user.id,
+        botId: ctx.bot.id, },
     }),
     prisma.spin.count({
       where: {
         userId: user.id,
         type: "Win",
         nftMode: true,
+        botId: ctx.bot.id,
         nftGiftTransferedAt: {
           not: null,
         },

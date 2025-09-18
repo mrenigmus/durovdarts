@@ -30,6 +30,9 @@ async function createInvoiceUrl(ctx: MyContext, game: Game) {
 export default async function startHandler(ctx: MyContext) {
   // Загружаем все активные игры
   const games = await prisma.game.findMany({
+    where: {
+      botId: ctx.bot.id,
+    },
     orderBy: { price: "asc" },
   });
 

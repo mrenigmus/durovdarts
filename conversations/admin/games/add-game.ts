@@ -2,6 +2,7 @@ import { MyContext, MyConversation } from "@/types/MyContext";
 import { InlineKeyboard } from "grammy";
 import { ConversationFlow } from "@/plugins/Conversation";
 import { prisma } from "@/utils/prisma";
+import { GameType } from "@/generated/prisma";
 
 interface Form {
   count?: number;
@@ -21,6 +22,8 @@ export class Conversation extends ConversationFlow<Form> {
   protected async onFinish() {
     const game = await prisma.game.create({
       data: {
+        botId: await this.conversation.external((c) => c.bot.id),
+        type: process.env.GAME_TYPE! as GameType,
         count: this.form.count!,
         price: this.form.price!,
         nftMode: this.form.nftMode!,
@@ -82,7 +85,7 @@ export class Conversation extends ConversationFlow<Form> {
     }
   }
 
-  protected cancelCb = 'admin:games'
+  protected cancelCb = "admin:games";
 }
 
 export default {

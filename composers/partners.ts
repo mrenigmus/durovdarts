@@ -10,6 +10,7 @@ bot.callbackQuery("bonus:partners", partners);
 bot.callbackQuery("bonus:partners:check", async (ctx) => {
   const lastPartnersReceived = await prisma.transaction.findFirst({
     where: {
+      botId: ctx.bot.id,
       userId: ctx.user.id,
       type: "Reward",
       meta: {
@@ -60,6 +61,7 @@ bot.callbackQuery("bonus:partners:check", async (ctx) => {
   await prisma.$transaction(async (tx) => {
     await tx.transaction.create({
       data: {
+        botId: ctx.bot.id,
         userId: ctx.user.id,
         amount: amount!,
         type: "Reward",

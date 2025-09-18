@@ -14,6 +14,9 @@ const BATCH_DELAY = 1500; // мс между батчами
 async function checkUsers() {
   const txs = await prisma.transaction.findMany({
     where: {
+      bot: {
+        token: process.env.BOT_TOKEN!,
+      },
       type: "Reward",
       meta: {
         path: "$.by",
@@ -28,6 +31,7 @@ async function checkUsers() {
       },
     },
     include: {
+      bot: true,
       user: true,
     },
   });

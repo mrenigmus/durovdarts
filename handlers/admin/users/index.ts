@@ -4,11 +4,17 @@ import chunk from "chunk";
 import { InlineKeyboard } from "grammy";
 
 export default async (ctx: MyContext, page: number | string) => {
-  const [users, meta] = await prisma.user
+  const [users, meta] = await prisma.userBot
     .paginate({
       orderBy: {
         id: "desc",
       },
+      where: {
+        botId: ctx.bot.id,
+      },
+      include: {
+        user: true,
+      }
     })
     .withPages({
       page: Number(page),
@@ -22,7 +28,7 @@ export default async (ctx: MyContext, page: number | string) => {
     reply_markup.row();
     v.map((v) =>
       reply_markup.text(
-        `${v.username ? v.username : v.tgId}`,
+        `${v.user.username ? v.user.username : v.user.tgId}`,
         `admin:user:${v.id}`
       )
     );

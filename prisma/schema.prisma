@@ -1,8 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -14,6 +10,50 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/**
+ * ---------- Базовые справочники ----------
+ */
+
+enum Language {
+  En
+  Ru
+}
+
+enum UserRole {
+  User
+  Moderator
+  Admin
+}
+
+enum SettingsType {
+  String
+  Int
+  Float
+  Boolean
+  Json
+}
+
+enum TransactionType {
+  Deposit
+  Spin
+  Reward
+  Refund
+}
+
+enum SpinType {
+  Win
+  Lose
+}
+
+enum GameType {
+  Darts
+  Basketball
+}
+
+/**
+ * ---------- Модели ----------
+ */
+
 model User {
   id       BigInt   @id @default(autoincrement())
   tgId     BigInt   @unique
@@ -23,25 +63,71 @@ model User {
   balance  Int      @default(0)
 
   isBanned     Boolean @default(false)
-  isMailBanned Boolean @default(false)
+  isMailBanned Boolean @default(false) // глобальный «хард-стоп», можно оставить
 
   referrerId BigInt?
   referrer   User?   @relation("UserReferrals", fields: [referrerId], references: [id])
   referrals  User[]  @relation("UserReferrals")
 
-  lastSeenAt  DateTime      @default(now())
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // связи
   Spin        Spin[]
   Transaction Transaction[]
+  UserBot     UserBot[]
+}
+
+model Bot {
+  id        BigInt   @id @default(autoincrement())
+  tgId BigInt @unique
+  name      String
+  username  String   @unique
+  type      GameType
+  token     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  users    UserBot[]
+  games    Game[]
+  spins    Spin[]
+  txs      Transaction[]
+  Partner  Partner[]
+  Settings Settings[]
+}
+
+model UserBot {
+  id           BigInt   @id @default(autoincrement())
+  userId       BigInt
+  botId        BigInt
+  isMailBanned Boolean  @default(false) // per-bot бан рассылок
+
+
+  user User @relation(fields: [userId], references: [id])
+  bot  Bot  @relation(fields: [botId], references: [id])
+
+  @@unique([userId, botId])
+  @@index([botId, isMailBanned])
 }
 
 model Game {
-  id         BigInt  @id @default(autoincrement())
+  id         BigInt   @id @default(autoincrement())
+  type       GameType
   count      Int
   price      Int
-  nftMode    Boolean @default(false)
+  nftMode    Boolean  @default(false)
   invoiceUrl String?
+
+  botId BigInt
+  bot   Bot    @relation(fields: [botId], references: [id])
+
+  title     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  Spin      Spin[]
+
+  @@index([type, isActive])
 }
 
 model Gift {
@@ -57,37 +143,67 @@ model Gift {
   isNFT     Boolean  @default(false)
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
-  Spin      Spin[]
-  NftSpin   Spin[]   @relation("nftGift")
+
+  Spin    Spin[]
+  NftSpin Spin[] @relation("nftGift")
+
+  @@index([isNFT, isActive])
 }
 
 model Spin {
-  id        BigInt   @id @default(autoincrement())
-  userId    BigInt
-  user      User?    @relation(fields: [userId], references: [id])
-  count     Int
-  results   Json
-  type      SpinType
-  nftMode   Boolean
+  id     BigInt @id @default(autoincrement())
+  userId BigInt
+  user   User   @relation(fields: [userId], references: [id])
+
+  gameId BigInt
+  game   Game   @relation(fields: [gameId], references: [id])
+
+  // денормализация для дешевых фильтров
+  gameType GameType
+  botId    BigInt
+  bot      Bot      @relation(fields: [botId], references: [id])
+
+  count   Int
+  results Json
+  type    SpinType
+  nftMode Boolean
+
   giftId    BigInt?
   nftGiftId BigInt?
-
-  giftTransferedAt    DateTime?
-  nftGiftTransferedAt DateTime?
 
   gift    Gift? @relation(fields: [giftId], references: [id])
   nftGift Gift? @relation(name: "nftGift", fields: [nftGiftId], references: [id])
 
+  giftTransferedAt    DateTime?
+  nftGiftTransferedAt DateTime?
+
   createdAt DateTime @default(now())
+
+  @@index([gameType, createdAt])
+  @@index([botId, createdAt])
+  @@index([type, nftMode, nftGiftId, nftGiftTransferedAt])
 }
 
-enum SpinType {
-  Win
-  Lose
+model Transaction {
+  id     BigInt @id @default(autoincrement())
+  userId BigInt
+  user   User   @relation(fields: [userId], references: [id])
+
+  botId BigInt
+  bot   Bot    @relation(fields: [botId], references: [id])
+
+  type      TransactionType
+  amount    Int
+  meta      Json            @default("{}")
+  createdAt DateTime        @default(now())
+
+  @@index([botId, createdAt])
 }
 
 model Partner {
   id        BigInt      @id @default(autoincrement())
+  botId     BigInt
+  bot       Bot         @relation(fields: [botId], references: [id])
   title     String?
   type      PartnerType @default(Channel)
   channelId BigInt?
@@ -101,44 +217,10 @@ enum PartnerType {
   Bot
 }
 
-model Transaction {
-  id        BigInt          @id @default(autoincrement())
-  userId    BigInt
-  user      User            @relation(fields: [userId], references: [id])
-  type      TransactionType
-  amount    Int
-  meta      Json            @default("{}")
-  createdAt DateTime        @default(now())
-}
-
-enum TransactionType {
-  Deposit
-  Spin
-  Reward
-  Refund
-}
-
 model Settings {
   key   String       @id
   type  SettingsType @default(String)
   value String?      @db.LongText
-}
-
-enum SettingsType {
-  String
-  Int
-  Float
-  Boolean
-  Json
-}
-
-enum Language {
-  En
-  Ru
-}
-
-enum UserRole {
-  User
-  Moderator
-  Admin
+  botId BigInt?
+  bot   Bot?         @relation(fields: [botId], references: [id])
 }
