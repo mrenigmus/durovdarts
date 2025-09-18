@@ -89,12 +89,31 @@ export default async function startHandler(ctx: MyContext) {
       count: (await getSetting<string>("ref:reward"))!,
     }),
     "referral"
-  );
+  ).row();
 
-  if (ctx.user.language == "Ru")
-    reply_markup.row().text(`🇺🇸 English`, `lang_En`);
-  else reply_markup.row().text(`🇷🇺 Русский язык`, `lang_Ru`);
+  const total = await prisma.bot.count({
+    where: {
+      id: {
+        not: ctx.bot.id,
+      },
+    },
+  });
 
+  const randomSkip = Math.floor(Math.random() * total);
+
+  const bot = await prisma.bot.findFirst({
+    where: {
+      id: {
+        not: ctx.bot.id,
+      },
+    },
+    skip: randomSkip,
+  });
+
+  if (bot) reply_markup.text(bot.name, `https://t.me/${bot.username}`);
+  
+  if (ctx.user.language == "Ru") reply_markup.text(`🇺🇸 English`, `lang_En`);
+  else reply_markup.text(`🇷🇺 Русский язык`, `lang_Ru`);
   if (ctx.user.role == "Admin")
     reply_markup.row().text(`🔐 Панель администратора`, `admin`);
 
