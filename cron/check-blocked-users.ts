@@ -6,17 +6,12 @@ import { prisma } from "@/utils/prisma";
 
 config({ path: path.join(__dirname, "../.env") });
 
-const bot = new Api(process.env.BOT_TOKEN!);
 const BATCH_SIZE = 30;
 const BATCH_DELAY = 1500; // мс между батчами
 
 async function checkUsers() {
   const users = await prisma.userBot.findMany({
-    where: {
-      bot: {
-        token: process.env.BOT_TOKEN!,
-      },
-    },
+
     include: {
       user: true,
       bot: true,
@@ -36,6 +31,7 @@ async function checkUsers() {
       batch.map(async (user) => {
         try {
           console.log(`Checking: `, user.user.tgId);
+          const bot = new Api(user.bot!.token!);
           await bot.sendChatAction(Number(user.user.tgId), "typing");
           idsToUnban.push(Number(user.id));
         } catch (err: any) {
