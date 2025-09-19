@@ -48,6 +48,7 @@ enum SpinType {
 enum GameType {
   Darts
   Basketball
+  Football
 }
 
 /**
