@@ -1,6 +1,13 @@
 import "module-alias/register";
 import { prisma } from "@/utils/prisma";
-import { SavedStarGift, StarGiftUnique, TelegramClient } from "@mtcute/bun";
+import {
+  BotKeyboard,
+  html,
+  Long,
+  SavedStarGift,
+  StarGiftUnique,
+  TelegramClient,
+} from "@mtcute/bun";
 import { config } from "dotenv";
 import path from "path";
 config({
@@ -11,14 +18,14 @@ const tg = new TelegramClient({
   apiId: Number(process.env.TG_API_ID),
   apiHash: process.env.TG_API_HASH! as string,
   storage: path.join(__dirname, "./sessions/client.session"),
-  initConnectionOptions: {
-    deviceModel: "iPhone 13 Pro",
-    systemVersion: "iOS 15.4",
-    appVersion: "9.6.2",
-    systemLangCode: "en",
-    langPack: "en",
-    langCode: "en",
-  },
+  // initConnectionOptions: {
+  //   deviceModel: "iPhone 13 Pro",
+  //   systemVersion: "iOS 15.4",
+  //   appVersion: "9.6.2",
+  //   systemLangCode: "en",
+  //   langPack: "en",
+  //   langCode: "en",
+  // },
 });
 // ==== Helpers ====
 function isUniqueGift(g: SavedStarGift["gift"]): g is StarGiftUnique {
@@ -60,6 +67,7 @@ type TransferableDto = {
   symbol: string;
   slug: string;
   ownerId: number | null;
+  emojiId?: Long;
   transferStars: string | null;
   canTransferAt: string | null;
   savedId: string | null; // может быть null
@@ -88,7 +96,9 @@ async function fetchTransferableUniques(): Promise<{
       const g = it.gift;
       if (!isUniqueGift(g)) continue;
       if (!isTransferableDate(it.canTransferAt)) continue;
-
+      // if ( it.gift.raw._ == "starGiftUnique" ){
+      if (!it.gift.isUnique) continue;
+      // }
       const dto: TransferableDto = {
         num: g.num,
         title: g.title,
@@ -97,6 +107,7 @@ async function fetchTransferableUniques(): Promise<{
         backdrop: g.backdrop.name,
         slug: g.slug,
         ownerId: g.ownerId ?? null,
+        emojiId: it.gift.model.sticker.customEmojiId,
         transferStars: it.transferStars ? String(it.transferStars) : null,
         canTransferAt: it.canTransferAt ? it.canTransferAt.toISOString() : null,
         savedId: it.savedId ? String(it.savedId) : null,
@@ -206,6 +217,7 @@ async function sendUnsended() {
     include: {
       gift: true,
       user: true,
+      bot: true,
     },
   });
 
@@ -238,6 +250,23 @@ async function sendUnsended() {
           toId: Number(s.user.tgId),
           messageId: gift.messageId!,
         });
+        await tg
+          .sendText(
+            Number(process.env.CHANNEL_ID!),
+            html`<tg-emoji id="${gift.emojiId}">🎁</tg-emoji>
+              <b>${gift.title} #${gift.num}</b> ушёл к
+              <b>@${s.user.username}</b>
+              <i>(ID: ${s.user.tgId.toString()})</i>
+              <br /><br />
+              <b
+                ><a href="https://t.me/nft/${dto.slug}">🥳</a> Выиграл в
+                @${s.bot.username}</b
+              ><br /><br />`,
+            {
+              invertMedia: true,
+            }
+          )
+          .catch((e) => e);
       });
     } catch (err) {
       console.error(err);
@@ -253,8 +282,8 @@ const run = async () => {
     code: () => tg.input("Code:"),
     password: () => tg.input("Password:"),
   });
-
-  sendUnsended();
+  fetchTransferableUniques();
+  // sendUnsended();
 };
 
 run();
