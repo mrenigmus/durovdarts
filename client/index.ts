@@ -282,8 +282,8 @@ const run = async () => {
     code: () => tg.input("Code:"),
     password: () => tg.input("Password:"),
   });
-  fetchTransferableUniques();
-  // sendUnsended();
+  // fetchTransferableUniques();
+  sendUnsended();
 };
 
 run();
