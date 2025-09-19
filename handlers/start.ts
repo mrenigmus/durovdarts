@@ -111,6 +111,10 @@ export default async function startHandler(ctx: MyContext) {
   });
 
   if (bot) reply_markup.url(bot.name, `https://t.me/${bot.username}`);
+  reply_markup.row()
+  .url(ctx.t("winners"), "https://t.me/GiftonsNFT")
+  .url(ctx.t("rules"), "https://t.me/GiftonsNFT/151")
+  .row();
   
   if (ctx.user.language == "Ru") reply_markup.text(`🇺🇸 English`, `lang_En`);
   else reply_markup.text(`🇷🇺 Русский язык`, `lang_Ru`);

@@ -1,7 +1,9 @@
 need-username = 😕 To use the bot, set a @username in your Telegram settings
 main-menu = 📋 Main Menu
+action-canceled = ❌ Action canceled
+cancel = ❌ Cancel
 notify =
-        .rewards = <b>🔥 Free stars are available!</b>
+        .rewards = <b>🔥 Free stars are available for you!</b>
         .rewards-receive = ⭐️ Claim
 start =
     .free = 🔥 {$count} ⭐️ • free
@@ -11,16 +13,16 @@ start =
 
             💰 Balance: <b>{$balance} ⭐️</b>
 
-            <blockquote><b>To receive a gift, you need to hit the center of <u>all targets</u> 🎁</b>
-            <i>An NFT gift can only be won in games marked with the 💎 symbol</i></blockquote>
+            <blockquote><b>To get a gift, you must hit the center of <u>all targets</u> 🎁</b>
+            <i>An NFT gift can only be won in games with the 💎 icon</i></blockquote>
 referral =
     .text = 
-            <b>👤 Get {$count} ⭐️ to your balance for every friend!</b>
+            <b>👤 Get {$count} ⭐️ to your balance for each friend!</b>
 
-            🎯 Condition: <b>a friend must throw at least 5 darts</b>
+            🎯 Condition: <b>your friend must throw at least 5 darts</b>
     .share = ↪️ Share
     .share-text = 
-                🎯 Can you hit the bullseye? Durov gives NFT gifts!
+                🎯 Will you hit the bullseye? Durov gives NFT gifts!
 
                 {$url}
 games =
@@ -28,9 +30,9 @@ games =
     .spinning-nft = 
                     <b>🎯 Throwing...</b>
 
-                    <b>🎁 If one of the gifts drops: {$nftGifts} - You’ll get a random NFT!</b>
+                    <b>🎁 If one of these gifts appears: {$nftGifts} - You’ll receive a random NFT!</b>
     .not-found = ❌ Game not found
-    .no-gifts = ❌ No available gifts
+    .no-gifts = ❌ No gifts available
     .not-enough-funds = ❌ Not enough stars on balance
     .spin = 🎯 Throw again
     .lose = <b>😔 You lost!</b>
@@ -40,25 +42,23 @@ games =
     .win-nft = 
                 <b>🎉 Congratulations, you won an NFT!</b>
 
-                <i>ℹ️ To receive the gift, send any message to @{$username}, and the bot will automatically send you the gift within a few minutes</i>
+                <i>ℹ️ To claim your gift, send any message to @{$username}, after that the bot will automatically send you the gift within a few minutes</i>
     .error =
             <b>⚠️ Error while sending the gift</b>
 partners =
     .text = 
-            <b>🎯 Complete all tasks and get free stars ⭐️ to your balance</b>
+            <b>🎯 Complete all tasks and get free stars to your balance ⭐️</b>
     .subscribe = 📢 Subscribe
-    .run = 🤖 Run
+    .run = 🤖 Start
     .check = ✅ Check
     .error = ❌ You haven’t completed all tasks
-    .success = <b>✅ Tasks completed!</b> Your balance has been credited with <b>{$amount} ⭐️</b>
-    .timeout = ⚠️ You can claim the next bonus in 24 hours
+    .success = <b>✅ Tasks completed!</b> <b>{$amount} ⭐️</b> have been credited to your balance
+    .timeout = ⚠️ You can get the next bonus in 24 hours
 plurals =
         .darts = {$count} { $count ->
                 [0] darts
                 [one] dart
-                [few] darts
-                [many] darts
-                *[other] darts 
+                *[other] darts
                 }
 back = ◀️ Back
 not-specified = ❓ Not specified
