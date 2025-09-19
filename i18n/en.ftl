@@ -15,6 +15,8 @@ start =
 
             <blockquote><b>To get a gift, you must hit the center of <u>all targets</u> 🎁</b>
             <i>An NFT gift can only be won in games with the 💎 icon</i></blockquote>
+winners = 🎁 NFT Winners
+rules = ℹ️ Rules
 referral =
     .text = 
             <b>👤 Get {$count} ⭐️ to your balance for each friend!</b>
