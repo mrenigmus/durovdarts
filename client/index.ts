@@ -250,8 +250,8 @@ async function sendUnsended() {
           toId: Number(s.user.tgId),
           messageId: gift.messageId!,
         });
-        await tg
-          .sendText(
+        try {
+          await tg.sendText(
             Number(process.env.CHANNEL_ID!),
             html`<tg-emoji id="${gift.emojiId}">🎁</tg-emoji>
               <b>${gift.title} #${gift.num}</b> ушёл к
@@ -259,14 +259,14 @@ async function sendUnsended() {
               <i>(ID: ${s.user.tgId.toString()})</i>
               <br /><br />
               <b
-                ><a href="https://t.me/nft/${dto.slug}">🥳</a> Выиграл в
+                ><a href="https://t.me/nft/${gift.slug}">🥳</a> Выиграл в
                 @${s.bot.username}</b
               ><br /><br />`,
             {
               invertMedia: true,
             }
-          )
-          .catch((e) => e);
+          );
+        } catch (err) {}
       });
     } catch (err) {
       console.error(err);
